@@ -1,0 +1,6 @@
+{
+    "id": 24,
+    "name": "Langford's number problem",
+    "prompt": "Given two sets of numbers from 1 to n, arrange the elements of these two sets into a single sequence such that for each pair of identical numbers i, the distance between them is i.",
+    "type": "medium"
+}

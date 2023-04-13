@@ -1,0 +1,6 @@
+{
+    "id": 18,
+    "name": "Water Bucket Problem",
+    "prompt": "Given an 8 pint bucket of water, and two empty buckets which can contain 5 and 3 pints respectively. You are required to divide the water into two by pouring water between buckets (that is, to end up with 4 pints in the 8 pint bucket, and 4 pints in the 5 pint bucket). This goal is to get the minimum number of transfers of water between buckets.",
+    "type": "easy"
+}

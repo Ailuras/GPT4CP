@@ -1,0 +1,6 @@
+{
+    "id": 22,
+    "name": "Bus Driver Scheduling",
+    "prompt": "Given a set of tasks and a collection of shifts, where each shift is a subset of the tasks. Choose a set of shifts that covers each task exactly once. The goal is to minimize the number of selected shifts.",
+    "type": "easy"
+}

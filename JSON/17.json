@@ -1,0 +1,6 @@
+{
+    "id": 17,
+    "name": "Ramsey Numbers",
+    "prompt": "Given a complete graph with n nodes using at most k colours, colour the edges of graph. The goal is to make sure there is no monochromatic triangle in the graph, i.e. in any triangle at most two edges have the same colour.",
+    "type": "easy"
+}

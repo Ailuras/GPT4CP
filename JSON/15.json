@@ -1,0 +1,6 @@
+{
+    "id": 15,
+    "name": "Schur's Lemma",
+    "prompt": "Given n balls labeled $1,..., n$. The goal is to put these balls into 3 boxes so that for any triple of balls $(x,y,z)$ with $x+y=z$, not all are in the same box.",
+    "type": "easy"
+}

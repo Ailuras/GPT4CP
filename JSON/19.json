@@ -1,0 +1,6 @@
+{
+    "id": 19,
+    "name": "Magic Squares and Sequences",
+    "prompt": "An order n magic square is a n \\times n matrix containing the numbers 1 to n^2, with each row, column and main diagonal equal the same sum.",
+    "type": "easy"
+}

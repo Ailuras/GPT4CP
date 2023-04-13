@@ -1,0 +1,6 @@
+{
+    "id": 23,
+    "name": "Magic Hexagon",
+    "prompt": "Given a magic hexagon consists of the numbers 1 to 19 arranged in a hexagonal pattern. The arrangement of the elements is [[A,B,C], [D,E,F,G], [H, I, J, K, L], [M, N, O, P], [Q, R, S]]. We want to make the sum of the elements in each diagonal equal to 38. For example, A+B+C=38, A+D+H=38, and so on. Find the possible arrangements of the numbers.",
+    "type": "medium"
+}
