@@ -1,0 +1,6 @@
+{
+	"id": 58,
+	"name": "discrete lot sizing problem",
+	"prompt": "It is a multi-item, single machine problem with capacity of production limited to one per period. There are storage costs and sequence-dependent changeover costs, respecting the triangle inequality. The changeover cost $q_{i,j}$ is induced when passing from the production of item $i$ to another one $j$ with $q_{i,i}=0 for all i$. Backlogging is not allowed, each order has to be produced before the corresponding demand time, and stocking (inventory) costs has to be paid proportional to the number of days between the production date and the demand time. The objective is to minimize the sum of stocking costs and change over costs.",
+	"type": "hard"
+}

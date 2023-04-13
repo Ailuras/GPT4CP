@@ -1,0 +1,6 @@
+{
+	"id": 55,
+	"name": "equidistant frequency permutation arrays",
+	"prompt": "The problem is to find a set (optionally of maximal size) of codewords, such that any pair of codewords are Hamming distance $d$ apart. Each codeword (which may be considered as a sequence) is made up of symbols from the alphabet ${1,\\dots,q}$, with each symbol occurring a fixed number $\\lambda$ of times per codeword. The problem has parameters $v$, $q$, $\\lambda$, $d$ and it is to find a set E of size $v$, of sequences of length $q\\lambda$, such that each sequence contains $\\lambda$ of each symbol in the set ${1,\\dots,q}$. For each pair of sequences in E, the pair are Hamming distance d apart (i.e. there are d places where the sequences disagree).",
+	"type": "medium"
+}

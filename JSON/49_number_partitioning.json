@@ -1,0 +1,6 @@
+{
+    "id": 49,
+    "name": "number partitioning",
+    "prompt": "This problem consists in finding a partition of numbers 1..N into two sets A and B such that:A and B have the same cardinality,sum of numbers in A = sum of numbers in B,sum of squares of numbers in A = sum of squares of numbers in B.",
+    "type": "easy"
+}
