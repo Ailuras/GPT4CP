@@ -1,27 +1,26 @@
 from ortools.sat.python import cp_model
 
-def schurs_lemma(n):
-    model = cp_model.CpModel()
-    box_vars = [[model.NewBoolVar(f'box_{i}_{j}') for j in range(n)] for i in range(3)]
-    ball_vars = [model.NewIntVar(0, 2, f'ball_{i}') for i in range(n)]
-    
-    for i in range(n):
-        model.Add(sum(box_vars[j][i] for j in range(3)) == 1)
-    
-    for i in range(n):
-        for j in range(i+1, n):
-            if i+j < n:
-                model.Add(sum(box_vars[k][i] * box_vars[l][j] for k in range(3) for l in range(3)) <= 1)
-                model.Add(sum(box_vars[k][i] * box_vars[l][j] for k in range(3) for l in range(3)) + sum(box_vars[k][j] * box_vars[l][i] for k in range(3) for l in range(3)) <= 2)
-    solver = cp_model.CpSolver()
-    status = solver.Solve(model)
-    if status == cp_model.FEASIBLE:
-        boxes = [[] for i in range(3)]
-        for i in range(n):
-            for j in range(3):
-                if solver.Value(box_vars[j][i]) == 1:
-                    boxes[j].append(i+1)
-        return boxes
-    return None
+model = cp_model.CpModel()
 
-print(schurs_lemma(10))
+n = 10  # the number of balls
+
+# Variables for the boxes
+boxes = [model.NewIntVar(0, 2, f"box{i}") for i in range(n)]
+
+# Constraints for pairs of balls
+for i in range(n):
+    for j in range(i+1, n):
+        if i + j < n:
+            # Constraints for pairs of balls that sum to a third ball
+            k = i + j
+            model.Add(boxes[i] != boxes[j]).OnlyEnforceIf(boxes[k] != boxes[i])
+            model.Add(boxes[i] != boxes[k]).OnlyEnforceIf(boxes[j] != boxes[i])
+            model.Add(boxes[j] != boxes[k]).OnlyEnforceIf(boxes[i] != boxes[j])
+
+# Solve the problem
+solver = cp_model.CpSolver()
+status = solver.Solve(model)
+
+if status == cp_model.FEASIBLE:
+    # Output the solution
+    print([solver.Value(box) for box in boxes])

@@ -1,17 +1,35 @@
 from ortools.sat.python import cp_model
 
-def langford(n):
+def langford_numbers(n):
     model = cp_model.CpModel()
-    positions = [model.NewIntVar(0, 2 * n, f'position_{i}') for i in range(2 * n)]
-    for i in range(n):
-        model.Add(positions[i] + i + 1 == positions[n + i])
-        for j in range(i + 1, n):
-            model.Add(abs(positions[i] - positions[j]) != j + 1)
-            model.Add(abs(positions[n + i] - positions[n + j]) != j + 1)
+    variables = {}
+    for i in range(1, n+1):
+        variables[i] = [model.NewIntVar(0, 2*n-i-1, f'pos_{i}_{j}') for j in range(2)]
+
+    for i in range(1, n+1):
+        for j in range(2):
+            model.Add(variables[i][j] + i <= 2*n)
+
+    for i in range(1, n+1):
+        for j in range(2):
+            for k in range(j+1, 2):
+                model.Add(variables[i][k] - variables[i][j] == i)
+
+    for i in range(1, n+1):
+        for j in range(i+1, n+1):
+            for k in range(2):
+                for l in range(2):
+                    model.Add(variables[i][k] != variables[j][l])
+
     solver = cp_model.CpSolver()
     status = solver.Solve(model)
-    if status == cp_model.FEASIBLE:
-        sequence = [0] * 2 * n
-        for i in range(2 * n):
-            sequence[solver.Value(positions[i])] = i + 1
+
+    if status == cp_model.OPTIMAL:
+        sequence = [0] * (2*n)
+        for i in range(1, n+1):
+            for j in range(2):
+                pos = solver.Value(variables[i][j])
+                sequence[pos] = i
         return sequence
+
+print(langford_numbers(4))

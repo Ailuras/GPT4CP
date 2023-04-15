@@ -1,75 +1,61 @@
 from ortools.sat.python import cp_model
 
-model = cp_model.CpModel()
+def crossfigures():
+    model = cp_model.CpModel()
 
-grid = [[model.NewIntVar(0, 9, f"grid_{i}_{j}") for j in range(9)] for i in range(9)]
+    grid = [[1, 2, None, 3, "X", 4, None, 5, 6],
+            [7, None, "X", 8, None, None, "X", 9, None],
+            [None, "X", 10, None, "X", 11, 12, "X", None],
+            [13, 14, None, None, "X", 15, None, 16, None],
+            ["X", None, "X", "X", "X", "X", "X", None, "X"],
+            [17, None, 18, 19, "X", 24, None, "X", None],
+            [None, "X", 23, None, "X", 24, None, "X", None],
+            [25, 26, "X", 27, None, None, "X", 28, None],
+            [29, None, None, None, "X", 30, None, None, None]]
 
-# Define constraints
-for i in range(9):
-    # Rows and columns can't have repeated numbers
-    model.AddAllDifferent(grid[i])
-    model.AddAllDifferent([grid[j][i] for j in range(9)])
+    # Variables for the non-"X" cells
+    cells = {}
+    for i in range(len(grid)):
+        for j in range(len(grid[0])):
+            if grid[i][j] is not None:
+                cells[(i, j)] = model.NewIntVar(0, 9, f"({i},{j})")
+
+    # Constraints for the horizontally arranged numbers
+    for i in range(len(grid)):
+        for j in range(len(grid[0])):
+            if grid[i][j] is not None and j < len(grid[0])-1 and grid[i][j+1] is not None:
+                num = int(str(grid[i][j]) + str(grid[i][j+1]))
+                model.Add(cells[(i,j)]*10 + cells[(i,j+1)] == num)
+
+    # Constraints for the vertically arranged numbers
+    for i in range(len(grid)):
+        for j in range(len(grid[0])):
+            if grid[i][j] is not None and i < len(grid)-1 and grid[i+1][j] is not None:
+                num = int(str(grid[i][j]) + str(grid[i+1][j]))
+                model.Add(cells[(i,j)]*10 + cells[(i+1,j)] == num)
+
+    # Constraints for the clues
+    model.Add(cells[(0,0)] == cells[(0,6)] + 27)
+    model.Add(cells[(0,3)] == cells[(3,3)] + 71)
+    model.Add(cells[(2,8)] == 4*12)
+    model.Add(cells[(3,0)] == 7*144)
+
+    # Solve the problem
+    solver = cp_model.CpSolver()
+    status = solver.Solve(model)
+
+    if status == cp_model.FEASIBLE:
+        # Output the solution
+        print("Crossfigure puzzle solution:")
+        for i in range(len(grid)):
+            row = []
+            for j in range(len(grid[0])):
+                if grid[i][j] is None:
+                    row.append("X")
+                else:
+                    row.append(str(solver.Value(cells[(i,j)])))
+            print(row)
+    else:
+        print("No solution found for the Crossfigure puzzle.")
     
-    # Add constraints for each clue
-    if i == 0:
-        model.Add(grid[0][0] == 2)
-        model.Add(grid[0][1] == 7)
-        model.Add(grid[0][3] == 4)
-        model.Add(grid[0][5] == 3)
-        model.Add(grid[0][6] == 0)
-        model.Add(grid[0][7] == 2)
-        model.Add(grid[0][8] == 4)
-        
-    if i == 3:
-        model.Add(grid[3][0] == 1)
-        model.Add(grid[3][1] == 6)
-        model.Add(grid[3][3] == 2)
-        model.Add(grid[3][5] == 5)
-        model.Add(grid[3][7] == 8)
-        model.Add(grid[3][8] == 7)
-        
-    if i == 5:
-        model.Add(grid[5][0] == 1)
-        model.Add(grid[5][2] == 8)
-        model.Add(grid[5][3] == 4)
-        model.Add(grid[5][5] == 7)
-        model.Add(grid[5][7] == 2)
-        model.Add(grid[5][8] == 5)
-        
-    if i == 6:
-        model.Add(grid[6][1] == 2)
-        model.Add(grid[6][3] == 8)
-        model.Add(grid[6][5] == 4)
-        model.Add(grid[6][7] == 9)
-        
-    if i == 7:
-        model.Add(grid[7][0] == 2)
-        model.Add(grid[7][2] == 3)
-        model.Add(grid[7][3] == 6)
-        model.Add(grid[7][6] == 4)
-        model.Add(grid[7][7] == 7)
-        
-    if i == 8:
-        model.Add(grid[8][0] == 2)
-        model.Add(grid[8][1] == 9)
-        model.Add(grid[8][4] == 4)
-        model.Add(grid[8][5] == 6)
-        model.Add(grid[8][8] == 0)
-        
-model.Add(grid[1][0] * 10000 + grid[1][1] * 1000 + grid[1][3] * 100 + grid[1][4] * 10 + grid[1][5] == 
-          (grid[1][7] * 1000 + grid[1][8] * 100 + 20 * 27))
-
-model.Add(grid[3][0] * 1000 + grid[3][1] * 100 + grid[3][3] * 10 + grid[3][5] + 71 == 
-          grid[0][1] * 1000 + grid[1][1] * 100 + grid[3][1] * 10 + grid[4][1])
-
-model.Add(grid[2][2] * 1000 + grid[2][3] * 100 + grid[2][4] * 10 + grid[2][5] == 4 * 12)
-
-model.Add(grid[2][6] * 1000 + grid[2][7] * 100 + grid[2][8] == 7 * 144)
-
-# Solve model
-solver = cp_model.CpSolver()
-status = solver.Solve(model)
-
-if status == cp_model.FEASIBLE:
-    for i in range(9):
-        print([int(solver.Value(grid[i][j])) if solver.Value(grid[i][j]) is not None else "X" for j in range(9)])
+crossfigures()
