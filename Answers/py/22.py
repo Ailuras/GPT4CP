@@ -1,4 +1,4 @@
-om ortools.sat.python import cp_model
+from ortools.sat.python import cp_model
 
 def bus_driver_scheduling(shifts, tasks):
     model = cp_model.CpModel()
