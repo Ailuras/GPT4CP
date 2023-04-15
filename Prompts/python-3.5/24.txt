@@ -1,0 +1,1 @@
+The Langford's number problem problem is: Given two sets of numbers from 1 to n, arrange the elements of these two sets into a single sequence such that for each pair of identical numbers i, the distance between them is i. Model the Langford's number problem problem using the Python API of OR-Tools. Please only output the code, without any prompt or explanation.

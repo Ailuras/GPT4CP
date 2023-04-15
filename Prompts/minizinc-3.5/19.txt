@@ -1,0 +1,1 @@
+The Magic Squares and Sequences problem is: An order n magic square is a n \times n matrix containing the numbers 1 to n^2, with each row, column and main diagonal equal the same sum. Build a MiniZinc model for the Magic Squares and Sequences problem. Please only output the model in the format of code block, without any prompt or explanation.

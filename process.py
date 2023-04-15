@@ -1,10 +1,10 @@
-import openai
+# import openai
 import os
 import sys
 import json
 
-openai.api_key = "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"
-model_engine = "gpt-3.5-turbo" # GPT-4
+# openai.api_key = "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"
+# model_engine = "gpt-3.5-turbo" # GPT-4
 
 type = sys.argv[1]
 folder = ""
@@ -17,25 +17,28 @@ filenames = os.listdir('JSON')
 for file in filenames:
     path = f'JSON/{file}'
     with open(path, 'r') as load_f:
-        load_dict = json.loads(load_f.read())
+        try:
+            load_dict = json.loads(load_f.read())
+        except:
+            print(file)
         if type == 'mzn':
-            prompt = "The "+load_dict['name']+" problem is: "+load_dict['prompt']+" Build a MiniZinc model for the "+load_dict['name']+" problem. Please only output the model, without any prompt or explanation."
+            prompt = "The "+load_dict['name']+" problem is: "+load_dict['prompt']+" Build a MiniZinc model for the "+load_dict['name']+" problem. Please only output the model in the format of code block, without any prompt or explanation."
         elif type == 'py':
             prompt = "The "+load_dict['name']+" problem is: "+load_dict['prompt']+" Model the "+load_dict['name']+" problem using the Python API of OR-Tools. Please only output the code, without any prompt or explanation."
         else:
             prompt = load_dict['prompt']
             
-        response = openai.ChatCompletion.create(
-            model = model_engine,
-            messages = [{"role": "user", "content": prompt}]
-        )
-        message = response.choices[0].message.content.strip()
-        begin = message.find('```')
-        end = message.rfind('```')
-        code = message[begin:end].strip("```").strip("python")
+        # response = openai.ChatCompletion.create(
+        #     model = model_engine,
+        #     messages = [{"role": "user", "content": prompt}]
+        # )
+        # message = response.choices[0].message.content.strip()
+        # begin = message.find('```')
+        # end = message.rfind('```')
+        # code = message[begin:end].strip("```").strip("python")
         
-        with open(f'Prompts/{folder}/{file.split(".")[0]}.txt') as write_f:
+        with open(f'Prompts/{folder}/{file.split(".")[0]}.txt', "w") as write_f:
             write_f.write(prompt)
-        with open(f'Answers/{folder}/{file.split(".")[0]}.{type}') as write_f:
-            write_f.write(code)
-    print("write "+file+" done.")
+        # with open(f'Answers/{folder}/{file.split(".")[0]}.{type}', "w") as write_f:
+        #     write_f.write(code)
+        print("write "+file+" done.")
