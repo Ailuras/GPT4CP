@@ -1,4 +1,3 @@
-python
 from ortools.sat.python import cp_model
 
 def magic_square(n):

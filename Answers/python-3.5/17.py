@@ -1,4 +1,4 @@
-om ortools.sat.python import cp_model
+from ortools.sat.python import cp_model
 
 def model_ramsey_numbers(n, k):
     model = cp_model.CpModel()
@@ -39,4 +39,5 @@ def model_ramsey_numbers(n, k):
                 solution[edge[:2]] = edge[2]
         return solution
     else:
-        return Non
+        return None
+

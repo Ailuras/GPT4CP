@@ -1,4 +1,4 @@
-om ortools.sat.python import cp_model
+from ortools.sat.python import cp_model
 
 model = cp_model.CpModel()
 

@@ -33,9 +33,9 @@ for file in filenames:
         begin = message.find('```')
         end = message.rfind('```')
         code = message[begin:end].strip("```").strip("python")
-
-    with open(f'Prompts/{folder}/{file.split(".")[0]}.txt') as write_f:
-        write_f.write(prompt)
-    with open(f'Answers/{folder}/{file.split(".")[0]}.{type}') as write_f:
-        write_f.write(code)
+        
+        with open(f'Prompts/{folder}/{file.split(".")[0]}.txt') as write_f:
+            write_f.write(prompt)
+        with open(f'Answers/{folder}/{file.split(".")[0]}.{type}') as write_f:
+            write_f.write(code)
     print("write "+file+" done.")

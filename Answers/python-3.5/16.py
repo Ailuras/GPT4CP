@@ -1,4 +1,4 @@
-om ortools.constraint_solver import pywrapcp
+from ortools.constraint_solver import pywrapcp
 
 
 def main():
@@ -26,4 +26,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main(
+    main()
