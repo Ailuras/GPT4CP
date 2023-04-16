@@ -24,7 +24,7 @@ for file in filenames:
         if type == 'mzn':
             prompt = "The "+load_dict['name']+" problem is: "+load_dict['prompt']+" Build a MiniZinc model for the "+load_dict['name']+" problem. Please only output the model in the format of code block, without any prompt or explanation."
         elif type == 'py':
-            prompt = "The "+load_dict['name']+" problem is: "+load_dict['prompt']+" Model the "+load_dict['name']+" problem using the Python API of OR-Tools. Please only output the code, without any prompt or explanation."
+            prompt = "The "+load_dict['name']+" problem is: "+load_dict['prompt']+" Model the "+load_dict['name']+" problem using the Python API of OR-Tools. Please only output the code in the format of code block, without any prompt or explanation."
         else:
             prompt = load_dict['prompt']
             
