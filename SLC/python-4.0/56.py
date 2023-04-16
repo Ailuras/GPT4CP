@@ -1,75 +1,56 @@
 from ortools.sat.python import cp_model
 
-model = cp_model.CpModel()
+def synchronous_optical_networking(n, r, demand, capacity_nodes):
+    model = cp_model.CpModel()
 
-grid = [[model.NewIntVar(0, 9, f"grid_{i}_{j}") for j in range(9)] for i in range(9)]
+    # Variables
+    ring_vars = {}
+    adm_vars = {}
+    for node in range(n):
+        adm_vars[node] = model.NewBoolVar(f'adm_{node}')
+        for ring in range(r):
+            ring_vars[node, ring] = model.NewBoolVar(f'ring_{ring}_node_{node}')
 
-# Define constraints
-for i in range(9):
-    # Rows and columns can't have repeated numbers
-    model.AddAllDifferent(grid[i])
-    model.AddAllDifferent([grid[j][i] for j in range(9)])
-    
-    # Add constraints for each clue
-    if i == 0:
-        model.Add(grid[0][0] == 2)
-        model.Add(grid[0][1] == 7)
-        model.Add(grid[0][3] == 4)
-        model.Add(grid[0][5] == 3)
-        model.Add(grid[0][6] == 0)
-        model.Add(grid[0][7] == 2)
-        model.Add(grid[0][8] == 4)
-        
-    if i == 3:
-        model.Add(grid[3][0] == 1)
-        model.Add(grid[3][1] == 6)
-        model.Add(grid[3][3] == 2)
-        model.Add(grid[3][5] == 5)
-        model.Add(grid[3][7] == 8)
-        model.Add(grid[3][8] == 7)
-        
-    if i == 5:
-        model.Add(grid[5][0] == 1)
-        model.Add(grid[5][2] == 8)
-        model.Add(grid[5][3] == 4)
-        model.Add(grid[5][5] == 7)
-        model.Add(grid[5][7] == 2)
-        model.Add(grid[5][8] == 5)
-        
-    if i == 6:
-        model.Add(grid[6][1] == 2)
-        model.Add(grid[6][3] == 8)
-        model.Add(grid[6][5] == 4)
-        model.Add(grid[6][7] == 9)
-        
-    if i == 7:
-        model.Add(grid[7][0] == 2)
-        model.Add(grid[7][2] == 3)
-        model.Add(grid[7][3] == 6)
-        model.Add(grid[7][6] == 4)
-        model.Add(grid[7][7] == 7)
-        
-    if i == 8:
-        model.Add(grid[8][0] == 2)
-        model.Add(grid[8][1] == 9)
-        model.Add(grid[8][4] == 4)
-        model.Add(grid[8][5] == 6)
-        model.Add(grid[8][8] == 0)
-        
-model.Add(grid[1][0] * 10000 + grid[1][1] * 1000 + grid[1][3] * 100 + grid[1][4] * 10 + grid[1][5] == 
-          (grid[1][7] * 1000 + grid[1][8] * 100 + 20 * 27))
+    # Constraints
+    # Each node in demand must be on at least one ring
+    for node1, node2 in demand:
+        model.Add(sum(ring_vars[node1, ring] for ring in range(r)) >= 1)
+        model.Add(sum(ring_vars[node2, ring] for ring in range(r)) >= 1)
 
-model.Add(grid[3][0] * 1000 + grid[3][1] * 100 + grid[3][3] * 10 + grid[3][5] + 71 == 
-          grid[0][1] * 1000 + grid[1][1] * 100 + grid[3][1] * 10 + grid[4][1])
+    # Each ring can have at most capacity_nodes
+    for ring in range(r):
+        model.Add(sum(ring_vars[node, ring] for node in range(n)) <= capacity_nodes[ring])
 
-model.Add(grid[2][2] * 1000 + grid[2][3] * 100 + grid[2][4] * 10 + grid[2][5] == 4 * 12)
+    # ADM constraint: if a node is on a ring, it has an ADM
+    for node in range(n):
+        for ring in range(r):
+            model.Add(ring_vars[node, ring] <= adm_vars[node])
 
-model.Add(grid[2][6] * 1000 + grid[2][7] * 100 + grid[2][8] == 7 * 144)
+    # Objective: minimize the number of ADMs
+    model.Minimize(sum(adm_vars.values()))
 
-# Solve model
-solver = cp_model.CpSolver()
-status = solver.Solve(model)
+    # Solve the model
+    solver = cp_model.CpSolver()
+    status = solver.Solve(model)
 
-if status == cp_model.FEASIBLE:
-    for i in range(9):
-        print([int(solver.Value(grid[i][j])) if solver.Value(grid[i][j]) is not None else "X" for j in range(9)])
+    # Output the solution
+    if status == cp_model.OPTIMAL or status == cp_model.FEASIBLE:
+        solution = {node: [solver.Value(ring_vars[node, ring]) for ring in range(r)] for node in range(n)}
+        total_adms = sum(solver.Value(adm_vars[node]) for node in range(n))
+        return solution, total_adms
+    else:
+        return None
+
+# Example usage
+n = 6
+r = 2
+demand = [(0, 1), (2, 3), (4, 5)]
+capacity_nodes = [3, 3]
+solution, total_adms = synchronous_optical_networking(n, r, demand, capacity_nodes)
+if solution is not None:
+    print('Solution found:')
+    for node, rings in solution.items():
+        print(f'Node {node}:', rings)
+    print('Total ADMs:', total_adms)
+else:
+    print('No solution found')

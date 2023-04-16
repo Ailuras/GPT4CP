@@ -1,32 +1,32 @@
-from ortools.linear_solver import pywraplp
+from ortools.sat.python import cp_model
 
 def number_partitioning(N):
-    solver = pywraplp.Solver.CreateSolver('GLOP')
+    model = cp_model.CpModel()
 
     # Variables
-    x = []
-    for i in range(N):
-        x.append(solver.BoolVar(f'x_{i + 1}'))
+    partition = [model.NewIntVar(0, 1, f'partition_{i}') for i in range(1, N + 1)]
 
     # Constraints
-    sum_x = solver.Sum(x[i] for i in range(N))
-    sum_x_squared = solver.Sum((i + 1) * (i + 1) * x[i] for i in range(N))
+    sum_A = sum([partition[i - 1] * i for i in range(1, N + 1)])
+    sum_B = sum([(1 - partition[i - 1]) * i for i in range(1, N + 1)])
 
-    solver.Add(sum_x == N // 2)
-    solver.Add(sum_x_squared == N * (N + 1) * (2 * N + 1) // 8)
+    sum_sq_A = sum([partition[i - 1] * i * i for i in range(1, N + 1)])
+    sum_sq_B = sum([(1 - partition[i - 1]) * i * i for i in range(1, N + 1)])
 
-    # Objective function
-    solver.Minimize(sum_x)
+    model.Add(sum_A == sum_B)
+    model.Add(sum_sq_A == sum_sq_B)
 
-    status = solver.Solve()
+    # Solve
+    solver = cp_model.CpSolver()
+    status = solver.Solve(model)
 
-    if status == pywraplp.Solver.OPTIMAL:
-        A = [i + 1 for i in range(N) if x[i].solution_value() == 1]
-        B = [i + 1 for i in range(N) if x[i].solution_value() == 0]
-        return A, B
+    # Print solution
+    if status == cp_model.OPTIMAL:
+        A = [i for i in range(1, N + 1) if solver.Value(partition[i - 1]) == 1]
+        B = [i for i in range(1, N + 1) if solver.Value(partition[i - 1]) == 0]
+        print("A:", A)
+        print("B:", B)
     else:
-        return None, None
+        print("No solution found.")
 
-N = 6
-A, B = number_partitioning(N)
-print(A, B)
+number_partitioning(10)

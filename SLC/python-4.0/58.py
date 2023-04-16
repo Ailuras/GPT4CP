@@ -1,52 +1,59 @@
 from ortools.sat.python import cp_model
 
-model = cp_model.CpModel()
+def discrete_lot_sizing(n_items, n_periods, demands, changeover_costs, storage_costs):
+    model = cp_model.CpModel()
 
-# Define variables
-num_vars = 19
-vars_matrix = [[None] * (i + 1) for i in range(num_vars)]
-for i in range(num_vars):
-    for j in range(i + 1):
-        vars_matrix[i][j] = model.NewIntVar(1, 19, f'x{i}_{j}')
+    # Variables
+    production = [[model.NewBoolVar(f'production_{i}_{t}') for t in range(n_periods)] for i in range(n_items)]
+    changeover = [[model.NewBoolVar(f'changeover_{i}_{j}_{t}') for j in range(n_items)] for i in range(n_items) for t in range(1, n_periods)]
 
-# Define constraints
-diag1 = [vars_matrix[0][0], vars_matrix[1][0], vars_matrix[2][0], vars_matrix[3][0]]
-diag2 = [vars_matrix[0][1], vars_matrix[1][1], vars_matrix[2][1], vars_matrix[3][1], vars_matrix[4][0]]
-diag3 = [vars_matrix[0][2], vars_matrix[1][2], vars_matrix[2][2], vars_matrix[3][2], vars_matrix[4][1], vars_matrix[5][0]]
-diag4 = [vars_matrix[0][3], vars_matrix[1][3], vars_matrix[2][3], vars_matrix[3][3], vars_matrix[4][2], vars_matrix[5][1]]
-diag5 = [vars_matrix[1][4], vars_matrix[2][4], vars_matrix[3][4], vars_matrix[4][3], vars_matrix[5][2]]
-diag6 = [vars_matrix[2][5], vars_matrix[3][5], vars_matrix[4][4], vars_matrix[5][3]]
+    # Constraints
+    # Production capacity limited to one per period
+    for t in range(n_periods):
+        model.Add(sum(production[i][t] for i in range(n_items)) <= 1)
 
-model.Add(sum(diag1) == 38)
-model.Add(sum(diag2) == 38)
-model.Add(sum(diag3) == 38)
-model.Add(sum(diag4) == 38)
-model.Add(sum(diag5) == 38)
-model.Add(sum(diag6) == 38)
+    # Satisfy demands before demand time
+    for i in range(n_items):
+        model.Add(sum(production[i][t] for t in range(demands[i][0])) >= 1)
 
-for i in range(num_vars):
-    if i < 4:
-        model.Add(sum(vars_matrix[i]) == 38)
-    elif i < 9:
-        model.Add(sum([row[i - 4] for row in vars_matrix]) == 38)
-    elif i < 14:
-        model.Add(sum([vars_matrix[j][i - j - 5] for j in range(i - 8, i + 1)]) == 38)
+    # Changeover constraints
+    for t in range(1, n_periods):
+        for i in range(n_items):
+            for j in range(n_items):
+                if i != j:
+                    model.Add(production[i][t] + production[j][t - 1] - 1 <= changeover[i][j][t])
+
+    # Objective: minimize sum of stocking costs and changeover costs
+    total_stocking_costs = sum(production[i][t] * storage_costs[i] * (t - demands[i][0]) for i in range(n_items) for t in range(demands[i][0], n_periods))
+    total_changeover_costs = sum(changeover[i][j][t] * changeover_costs[i][j] for i in range(n_items) for j in range(n_items) for t in range(1, n_periods))
+    model.Minimize(total_stocking_costs + total_changeover_costs)
+
+    # Solve the model
+    solver = cp_model.CpSolver()
+    status = solver.Solve(model)
+
+    # Output the solution
+    if status == cp_model.OPTIMAL or status == cp_model.FEASIBLE:
+        solution = [[solver.Value(production[i][t]) for t in range(n_periods)] for i in range(n_items)]
+        return solution
     else:
-        model.Add(sum([vars_matrix[j][i - j - 5] for j in range(i - 8, 14)]) == 38)
+        return None
 
-for i in range(num_vars):
-    for j in range(i + 1):
-        for k in range(j + 1, i + 1):
-            model.Add(vars_matrix[i][j] != vars_matrix[i][k])
+# Example usage
+n_items = 3
+n_periods = 5
+demands = [(2, 2), (3, 1), (1, 1)]
+changeover_costs = [
+    [0, 10, 15],
+    [10, 0, 20],
+    [15, 20, 0],
+]
+storage_costs = [2, 3, 4]
 
-# Define solution strategy
-solver = cp_model.CpSolver()
-solution_printer = cp_model.VarArrayAndObjectiveSolutionPrinter(vars_matrix)
-status = solver.SolveWithSolutionCallback(model, solution_printer)
-
-# Print output
-if status == cp_model.OPTIMAL:
-    for i in range(num_vars):
-        for j in range(i + 1):
-            print(f'{solver.Value(vars_matrix[i][j])} ', end='')
-        print(
+solution = discrete_lot_sizing(n_items, n_periods, demands, changeover_costs, storage_costs)
+if solution is not None:
+    print('Solution found:')
+    for i, item in enumerate(solution):
+        print(f'Item {i + 1}:', item)
+else:
+    print('No solution found')

@@ -1,29 +1,35 @@
 from ortools.sat.python import cp_model
 
-model = cp_model.CpModel()
+def n_queens(n):
+    model = cp_model.CpModel()
 
-# Variables
-bucket_8 = model.NewIntVar(0, 8, 'bucket_8')
-bucket_5 = model.NewIntVar(0, 5, 'bucket_5')
-bucket_3 = model.NewIntVar(0, 3, 'bucket_3')
+    # Variables
+    queens = [model.NewIntVar(0, n - 1, f'queen_{i}') for i in range(n)]
 
-# Constraints
-model.Add(bucket_8 == 4 + bucket_5 + bucket_3)
-model.Add(bucket_5 <= 4)
-model.Add(bucket_3 <= 4)
-model.Add(bucket_5 + bucket_3 >= 4)
-model.Add(bucket_5 + bucket_3 <= 8)
+    # Constraints
+    # All queens must be on different rows
+    model.AddAllDifferent(queens)
 
-# Objective
-model.Minimize(bucket_5 + bucket_3)
+    # No two queens can be on the same diagonal
+    for i in range(n):
+        for j in range(i + 1, n):
+            model.Add(queens[i] - queens[j] != j - i)
+            model.Add(queens[i] - queens[j] != i - j)
 
-# Solve
-solver = cp_model.CpSolver()
-status = solver.Solve(model)
+    # Solve the model
+    solver = cp_model.CpSolver()
+    status = solver.Solve(model)
 
-# Output
-if status == cp_model.OPTIMAL:
-    print("Minimum number of transfers:", solver.ObjectiveValue())
-    print("Bucket 8 contains:", solver.Value(bucket_8), "pints")
-    print("Bucket 5 contains:", solver.Value(bucket_5), "pints")
-    print("Bucket 3 contains:", solver.Value(bucket_3), "pints")
+    # Output the solution
+    if status == cp_model.OPTIMAL or status == cp_model.FEASIBLE:
+        return [solver.Value(queens[i]) for i in range(n)]
+    else:
+        return None
+
+# Example usage
+n = 8
+solution = n_queens(n)
+if solution is not None:
+    print('Solution found:', solution)
+else:
+    print('No solution found')

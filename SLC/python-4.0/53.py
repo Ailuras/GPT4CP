@@ -1,43 +1,42 @@
 from ortools.sat.python import cp_model
 
-def model_ramsey_numbers(n, k):
+def graceful_graph(edges, q):
     model = cp_model.CpModel()
 
-    nodes = list(range(n))
-    edges = [(i, j) for i in nodes for j in nodes if i < j]
+    # Variables
+    node_labels = [model.NewIntVar(0, q, f'node_{i}') for i in range(len(edges) + 1)]
+    edge_labels = [model.NewIntVar(1, q, f'edge_{i}') for i in range(q)]
 
-    variables = {}
-    for edge in edges:
-        for color in range(k):
-            variables[edge, color] = model.NewBoolVar(f'edge_{edge}_color_{color}')
+    # Constraints
+    # Node labels must be unique
+    model.AddAllDifferent(node_labels)
 
-    for i in nodes:
-        for j in nodes:
-            if i < j:
-                for color in range(k):
-                    model.AddBoolOr([variables[(i, j), c] for c in range(k) if c != color])
-    
-    for i in nodes:
-        for j in nodes:
-            if i < j:
-                for k in nodes:
-                    if j < k:
-                        for color in range(k):
-                            model.AddBoolOr([variables[(i, j), c] for c in range(k) if c != color])
-                            model.AddBoolOr([variables[(i, k), c] for c in range(k) if c != color])
-                            model.AddBoolOr([variables[(j, k), c] for c in range(k) if c != color])
-                            model.AddBoolOr([variables[(i, j), c] for c in range(k) if c != color] + [variables[(i, k), c] for c in range(k) if c != color] + [variables[(j, k), c] for c in range(k) if c != color])
+    # Edge labels must be unique
+    model.AddAllDifferent(edge_labels)
 
+    # Edge labels must be the absolute difference of their node labels
+    for i, (u, v) in enumerate(edges):
+        model.AddAbsEquality(edge_labels[i], cp_model.LinearExpr.Minus(node_labels[u], node_labels[v]))
+
+    # Solve the model
     solver = cp_model.CpSolver()
-    solver.parameters.max_time_in_seconds = 60.0
     status = solver.Solve(model)
 
-    if status == cp_model.FEASIBLE:
-        solution = {(i, j): None for i, j in edges}
-        for edge, color in variables.items():
-            if solver.Value(color):
-                solution[edge[:2]] = edge[2]
-        return solution
+    # Output the solution
+    if status == cp_model.OPTIMAL or status == cp_model.FEASIBLE:
+        node_labels_solution = [solver.Value(node_labels[i]) for i in range(len(edges) + 1)]
+        edge_labels_solution = [solver.Value(edge_labels[i]) for i in range(q)]
+        return node_labels_solution, edge_labels_solution
     else:
         return None
 
+# Example usage
+edges = [(0, 1), (1, 2), (2, 3), (0, 3), (0, 4)]
+q = len(edges)
+result = graceful_graph(edges, q)
+if result is not None:
+    node_labels_solution, edge_labels_solution = result
+    print('Node labels:', node_labels_solution)
+    print('Edge labels:', edge_labels_solution)
+else:
+    print('No graceful labeling found')
